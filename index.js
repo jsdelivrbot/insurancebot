@@ -88,6 +88,12 @@ function sendMessage(event) {
 
 /* Webhook for API.ai to get response from the 3rd party API */
 app.post('/ai', (req, res) => {
+  var msg = 'abc'
+  return res.json({
+          speech: msg,
+          displayText: msg,
+          source: 'weather'
+        });
   console.log('*** Webhook for api.ai query ***');
   console.log(req.body.result);
 
