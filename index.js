@@ -32,7 +32,7 @@ app.post('/webhook', function(req, res) {
       msg = 'Hello';
     }*/
     return res.json({
-          speech: req.body.result.action,
+          speech: msg,
           displayText: msg,
           source: 'weather'
         });
