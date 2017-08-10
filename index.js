@@ -30,7 +30,7 @@ app.get('/webhook', (req, res) => {
 /* Handling all messenges */
 app.post('/webhook', (req, res) => {
   console.log(req.body);
-  if (req.body.object === 'page') {
+  /*if (req.body.object === 'page') {
     req.body.entry.forEach((entry) => {
       entry.messaging.forEach((event) => {
         if (event.message && event.message.text) {
@@ -39,7 +39,13 @@ app.post('/webhook', (req, res) => {
       });
     });
     res.status(200).end();
-  }
+  }*/
+  var msg = 'The weather is good';
+  return res.json({
+          speech: msg,
+          displayText: msg,
+          source: 'weather'
+        });
 });
 
 /* GET query from API.ai */
