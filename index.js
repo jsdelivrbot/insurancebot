@@ -1,66 +1,48 @@
-var express = require('express');
-var app = express();
+'use strict';
+const PAGE_ACCESS_TOKEN = process.env.PAGE_ACCESS_TOKEN;
+const APIAI_TOKEN = process.env.APIAI_TOKEN;
+const WEATHER_API_KEY = process.env.WEATHER_API_KEY;
 
-app.set('port', (process.env.PORT || 5000));
+const express = require('express');
+const bodyParser = require('body-parser');
+const request = require('request');
+const apiai = require('apiai');
 
-app.use(express.static(__dirname + '/public'));
+const app = express();
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true }));
 
-// views is directory for all template files
-app.set('views', __dirname + '/views');
-app.set('view engine', 'ejs');
+const server = app.listen(process.env.PORT || 5000, () => {
+  console.log('Express server listening on port %d in %s mode', server.address().port, app.settings.env);
+});
 
-app.get('/webhook', function(request, response) {
-  console.log(request.body);
-  if (request.body.object === 'page') {
-    request.body.entry.forEach((entry) => {
+const apiaiApp = apiai(APIAI_TOKEN);
+
+/* For Facebook Validation */
+app.get('/webhook', (req, res) => {
+  if (req.query['hub.mode'] && req.query['hub.verify_token'] === 'tuxedo_cat') {
+    res.status(200).send(req.query['hub.challenge']);
+  } else {
+    res.status(403).end();
+  }
+});
+
+/* Handling all messenges */
+app.post('/webhook', (req, res) => {
+  console.log(req.body);
+  if (req.body.object === 'page') {
+    req.body.entry.forEach((entry) => {
       entry.messaging.forEach((event) => {
         if (event.message && event.message.text) {
           sendMessage(event);
         }
       });
     });
-    response.status(200).end();
+    res.status(200).end();
   }
 });
 
-/*app.post('/webhook', function(req, res) {
-    //var speech = req.body.result && req.body.result.parameters && req.body.result.parameters.echoText ? req.body.result.parameters.echoText : "Seems like some problem. Speak again."
-    var msg =  'holle';
-    try {
-      msg = req.body.result.action;
-    } catch(err) { 
-      msg = err.message;
-    }
-    if (req.body.result.action === 'total-permanent-disability-no') {
-      msg = 'OK, so you dont want to cover Permanent Disability. Here is the suitable plan for you: ...';
-    } else if (req.body.result.action === 'input.welcome') {
-      msg = 'Hello';
-    }
-    return res.json({
-          speech: msg,
-          displayText: msg,
-          source: 'weather'
-        });
-});*/
-
-app.post('/webhook', (req, res) => {
-  var msg =  'holle';
-    try {
-      msg = req.body.result.action;
-    } catch(err) { 
-      msg = 'aa' + err.message;
-    }
-    /*if (req.body.result.action === 'total-permanent-disability-no') {
-      msg = 'OK, so you dont want to cover Permanent Disability. Here is the suitable plan for you: ...';
-    } else if (req.body.result.action === 'input.welcome') {
-      msg = 'Hello';
-    }*/
-    return res.json({
-          speech: msg,
-          displayText: msg,
-          source: 'weather'
-        });
-});
+/* GET query from API.ai */
 
 function sendMessage(event) {
   let sender = event.sender.id;
@@ -99,13 +81,37 @@ function sendMessage(event) {
 }
 
 /* Webhook for API.ai to get response from the 3rd party API */
-app.post('/ai', function (req, res) {
+app.post('/ai', (req, res) => {
+  console.log('*** Webhook for api.ai query ***');
+  console.log(req.body.result);
+
   if (req.body.result.action === 'weather') {
     console.log('*** weather ***');
     let city = req.body.result.parameters['geo-city'];
-  }
-});
+    let restUrl = 'http://api.openweathermap.org/data/2.5/weather?APPID='+WEATHER_API_KEY+'&q='+city;
 
-app.listen(app.get('port'), function() {
-  console.log('Node app is running on port', app.get('port'));
+    request.get(restUrl, (err, response, body) => {
+      if (!err && response.statusCode == 200) {
+        let json = JSON.parse(body);
+        console.log(json);
+        let tempF = ~~(json.main.temp * 9/5 - 459.67);
+        let tempC = ~~(json.main.temp - 273.15);
+        let msg = 'The current condition in ' + json.name + ' is ' + json.weather[0].description + ' and the temperature is ' + tempF + ' ℉ (' +tempC+ ' ℃).'
+        return res.json({
+          speech: msg,
+          displayText: msg,
+          source: 'weather'
+        });
+      } else {
+        let errorMessage = 'I failed to look up the city name.';
+        return res.status(400).json({
+          status: {
+            code: 400,
+            errorType: errorMessage
+          }
+        });
+      }
+    })
+  }
+
 });
