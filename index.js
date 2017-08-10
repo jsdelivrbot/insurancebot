@@ -48,7 +48,7 @@ app.post('/webhook', (req, res) => {
     try {
       msg = req.body.result.action;
     } catch(err) { 
-      msg = err.message;
+      msg = 'aa' + err.message;
     }
     /*if (req.body.result.action === 'total-permanent-disability-no') {
       msg = 'OK, so you dont want to cover Permanent Disability. Here is the suitable plan for you: ...';
