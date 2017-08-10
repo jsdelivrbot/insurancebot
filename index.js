@@ -20,7 +20,7 @@ const apiaiApp = apiai(APIAI_TOKEN);
 
 /* For Facebook Validation */
 app.get('/webhook', (req, res) => {
-  if (req.query['hub.mode'] && req.query['hub.verify_token'] === 'tuxedo_cat') {
+  if (req.query['hub.mode'] && req.query['hub.verify_token'] === 'WeatherForecast') {
     res.status(200).send(req.query['hub.challenge']);
   } else {
     res.status(403).end();
