@@ -26,11 +26,11 @@ app.get('/webhook', function(request, response) {
 app.post('/webhook', function(req, res) {
     //var speech = req.body.result && req.body.result.parameters && req.body.result.parameters.echoText ? req.body.result.parameters.echoText : "Seems like some problem. Speak again."
     var msg =  'holle';
-    /*try {
+    try {
       msg = req.body.result.action;
-    } catch(e) { 
-      msg = 'exception';
-    }*/
+    } catch(err) { 
+      msg = err.message;
+    }
     /*if (req.body.result.action === 'total-permanent-disability-no') {
       msg = 'OK, so you dont want to cover Permanent Disability. Here is the suitable plan for you: ...';
     } else if (req.body.result.action === 'input.welcome') {
