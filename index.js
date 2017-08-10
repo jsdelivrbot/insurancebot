@@ -29,7 +29,7 @@ app.post('/webhook', function(req, res) {
     try {
       msg = req.body.result.action;
     } catch(e) { 
-      msg = e;
+      msg = 'exception';
     }
     /*if (req.body.result.action === 'total-permanent-disability-no') {
       msg = 'OK, so you dont want to cover Permanent Disability. Here is the suitable plan for you: ...';
