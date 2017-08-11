@@ -18,9 +18,8 @@ app.listen(app.get('port'), function() {
 });
 
 app.post('/webhook', (req, res) => {
-  //var req
-  var msg = JSON.stringify(req);
-  alert(msg);
+  //var msg = JSON.stringify(req);
+  //alert(msg);
   return res.json({
           speech: msg,
           displayText: msg,
